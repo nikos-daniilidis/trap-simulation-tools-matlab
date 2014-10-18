@@ -16,8 +16,9 @@ You can find example simulations under eurotrap-pt1.txt etc. These were produced
 We have adapted this library to use with surface electrode traps. You should be able to use it with any 
 other trap geometry. Our convention for numbering the trap electrodes is: 
 
-  a. Each trap has N electrodes and one ground electrode (the RF electrode is included to the N)
-  b. For a linear segmented trap We start counting on the lower left corner. The lower left DC electrode is 1. As you move up along the axis (staying on the same side of the RF rail you count up). When you reach the top, you cross to the right side of the RF rail and start counting at the bottom. When you reach the top, you cross to the inside of the RF rail and count DC electrodes from bottom to top. When you are done counting all the DCs, you count the RF electrodes.
+1. Each trap has N electrodes and one ground electrode (the RF electrode is included to the N)
+
+2. For a linear segmented trap We start counting on the lower left corner. The lower left DC electrode is 1. As you move up along the axis (staying on the same side of the RF rail you count up). When you reach the top, you cross to the right side of the RF rail and start counting at the bottom. When you reach the top, you cross to the inside of the RF rail and count DC electrodes from bottom to top. When you are done counting all the DCs, you count the RF electrodes.
 
 ### 3. Instructions 
 
@@ -38,22 +39,22 @@ Day-to-day usage will only involve messing around with analyze_trap,  project_pa
 `import_data.m`:
     You should not have to look inside this function, unless you are trying something new (and possibly inappropriate). `import_data` reads the text files which your BEM solver simulations generated, and converts them to a `.mat` structure (matlab) or a pickled data object (Python version). `import_data` _does not_ make any changes to the structure `trap`. This is the job of the next function. 
     
-	The main thing to remember is that consecutive BEM solver simulations must have overlapping first and last axial positions, i.e. `[Z(last)]_simulation(n) = [Z(first)]_simulation(n+1)`, where Z is the position vector along the trap axis.
+The main thing to remember is that consecutive BEM solver simulations must have overlapping first and last axial positions, i.e. `[Z(last)]_simulation(n) = [Z(first)]_simulation(n+1)`, where Z is the position vector along the trap axis.
     
 `get_trapping_field.m`:
     You should not have to look inside this function, unless you are trying something new (and possibly inappropriate). `get_trapping_field` adds the grid and electrostatic potential arrays to the structure `trap`. It looks through the data structures which BEM solver generated and creates new data structure whith a grid which is centered around the position where you want to trap. You define the trapping position in project_parameters. 
     
-    At the end of get_trapping_field, the structure `trap` should contain a field Simulatrion, with subfields such as `trap.Simulation.X`, `trap.Simulation.EL_DC1`, etc.
+At the end of get_trapping_field, the structure `trap` should contain a field Simulatrion, with subfields such as `trap.Simulation.X`, `trap.Simulation.EL_DC1`, etc.
 
 `expand_field.m`:
     You should not have to look inside this function, unless you are trying something new (and possibly inappropriate). expand_field does the spherical harmonic expansion of the potentials for all the used electrodes. It then stores the harmonic expansion coefficients in the array trap.Configuration.multipoleCoefficients.
     
-    As an option, `expand_field` will also compute all the potentials from the spherical harmonic coefficients and replace the original values with the computed ones. This can be useful as a data smoothing step so that the algorithms which use numerical derivatives (e.g. in `post_process_trap` for pseudopotential calculation, `find_saddle`, `trap_depth`) work better.
+As an option, `expand_field` will also compute all the potentials from the spherical harmonic coefficients and replace the original values with the computed ones. This can be useful as a data smoothing step so that the algorithms which use numerical derivatives (e.g. in `post_process_trap` for pseudopotential calculation, `find_saddle`, `trap_depth`) work better.
     
 `trap_knobs.m`:
     You should not have to look inside this function, unless you are trying something new (and possibly inappropriate). `trap_knobs` calculates the independent multipole control parameters (see [G. Littich Master's thesis](http://research.physics.berkeley.edu/haeffner/publications/littich-thesis.pdf) for an explanation of what these are). It stores the control parameters in `trap.Configuration.multipoleControl`. It also stores the kernel vectors of the `multipoleControl` space in `trap.Configuration.multipoleControl`. 
     
-    Normally, you are done at this point, you can save the so-called `trap.Configuration.multipoleControl` array to a file and import it to `LabRad`. As of 4/4/2014, the array is saved as `Multipole_Control_File.txt`, under the `_post_processed` folder
+Normally, you are done at this point, you can save the so-called `trap.Configuration.multipoleControl` array to a file and import it to `LabRad`. As of 4/4/2014, the array is saved as `Multipole_Control_File.txt`, under the `_post_processed` folder
     
 `multipole_set_dc.m`:
     You should not have to look inside this function, unless you are trying something new. `multipole_set_dc.m` takes as inputs multipole parameters or a set of Mathieu parameters, and produces an 1-D array with the voltages you need to apply to all of the electrodes. The entries corresponding to multipole-controlled electrodes receive some values. If some electrodes are under manual control (per your definition in `project_parameters`) these are set to zero. You can add the values to these electrodes at a higher level (as in `set_voltages`)
@@ -61,9 +62,9 @@ Day-to-day usage will only involve messing around with analyze_trap,  project_pa
 `post_process_trap.m`:
     You should not have to look inside this function, unless you are trying something new. `post_process_trap` is a function which takes in a set of electrode voltages, RF frequency, and amplitude and calculates what the trap potential should look like. it plots the rf potential, rf pseudopotential, dc potentail, and total trap potential. It also calculates the trap frequencies, trap depth, and trapping position. The options for plotting these potentials are: `no plots`, `1d plots`, `2d plots`, and `2d plots and 1d plots`.
     
-    `post_process_trap` updates the `trap.Instance` structure with all these parameters that it has calculated. 
+`post_process_trap` updates the `trap.Instance` structure with all these parameters that it has calculated. 
     
-    Two obsolete (pre-2009) functionalities of `post_processs_trap` are: calculating micromotion compensation parameters given a stray electric field, and calculating a stray electric field, given micromotion compensated voltages. You will not use these, unless you have an interest in the history of science and technology.
+Two obsolete (pre-2009) functionalities of `post_processs_trap` are: calculating micromotion compensation parameters given a stray electric field, and calculating a stray electric field, given micromotion compensated voltages. You will not use these, unless you have an interest in the history of science and technology.
     
 
 #### Lower level scripts and functions
